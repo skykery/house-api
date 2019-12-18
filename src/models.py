@@ -1,6 +1,6 @@
 from peewee import *
 import datetime
-db = SqliteDatabase('logs.db', pragmas={'foreign_keys': 1})
+db = SqliteDatabase('/db/logs.db', pragmas={'foreign_keys': 1})
 
 class BaseModel(Model):
     class Meta:
