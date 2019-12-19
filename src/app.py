@@ -60,7 +60,7 @@ def ping_room(number):
 @basic_auth.required
 def show_room(number):
     number = int(request.view_args['number'])
-    logs = Log.select().where(Log.room_number==room_number).order_by(Log.created.desc()).limit(SHOW_LIMIT).dicts()
+    logs = Log.select().where(Log.room_number==number).order_by(Log.created.desc()).limit(SHOW_LIMIT).dicts()
     return jsonify(results=list(logs)), 200
 
 @app.route('/show/rooms', methods=['GET'])
