@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request, abort, redirect
 from datetime import datetime
 from models import Log, _init__db, db as database
 from flask_basicauth import BasicAuth
@@ -92,6 +92,11 @@ def show_last(limit):
 def show_last_one():
     log = Log.select().order_by(Log.created.desc()).dicts().get()
     return jsonify(result=log), 200
+
+
+@app.route("/")
+def index():
+    return redirect('/index.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=9050, debug=True)

@@ -21,9 +21,7 @@
                                     </div>
                             </article>
 
-                            <div v-for="(logs,room) in rooms">
-
-                                <article class="message">
+                                <article v-for="(logs,room) in rooms" class="message">
                                         <div class="message-header">
                                             <p>{{ room }}</p>
                                         </div>
@@ -37,7 +35,6 @@
                                         </div>
                                 </article>
 
-                            </div>
                         </div>
                     </div>
 
@@ -71,12 +68,12 @@
             },
             get_last_log: function (){
                 axios
-                .get('http://localhost:9050/show/last')
+                .get('https://house.techwetrust.com/show/last')
                 .then(response => this.render_last_log(response))
             },
             get_rooms: function (){
                 axios
-                .get('http://localhost:9050/show/rooms')
+                .get('https://house.techwetrust.com/show/rooms')
                 .then(response => this.render_rooms(response))
             },
 
