@@ -1,0 +1,85 @@
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css" />
+    </head>
+    <body>
+        <div id="app">
+            <section class="section">
+                <div class="container has-text-centered">
+                    <div class="columns is-mobile">
+                        <div class="column is-half is-offset-one-quarter">
+                            <article class="message">
+                                    <div class="message-header">
+                                        <p>Ultima activitate</p>
+                                    </div>
+                                    <div class="message-body">
+                                        <div v-if="last_log">
+                                                <strong>{{ last_log.created }}</strong> {{ last_log.room_name}}
+                                        </div>
+                                    </div>
+                            </article>
+
+                            <div v-for="(logs,room) in rooms">
+
+                                <article class="message">
+                                        <div class="message-header">
+                                            <p>{{ room }}</p>
+                                        </div>
+                                        <div class="message-body">
+                                            <div v-if="logs.length > 0">
+                                                <div v-for="log in logs" v-bind:key="log.key">
+                                                        <strong>{{ log.created }}</strong>
+                                                </div>
+                                            </div>
+                                            <div v-else>Nu sunt date disponibile</div>
+                                        </div>
+                                </article>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+    </body>
+    <script>
+        new Vue({
+        el: '#app',
+        data () {
+            return {
+                last_log: null,
+                rooms: [],
+            }
+        },
+        mounted () {
+            axios.defaults.headers.common['Authorization'] = 'Basic YWRtaW46YWRtaW4='
+            this.get_last_log()
+            this.get_rooms()
+            setInterval(() => this.get_last_log(), 10000)
+            setInterval(() => this.get_rooms(), 10000)
+        },
+        methods: {
+            render_last_log: function (response){
+                this.last_log = response.data.result
+
+            },
+            render_rooms: function (response){
+                this.rooms = response.data.results
+            },
+            get_last_log: function (){
+                axios
+                .get('http://localhost:9050/show/last')
+                .then(response => this.render_last_log(response))
+            },
+            get_rooms: function (){
+                axios
+                .get('http://localhost:9050/show/rooms')
+                .then(response => this.render_rooms(response))
+            },
+
+        }
+        })
+    </script>

@@ -1,0 +1,99 @@
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css" />
+    </head>
+    <body>
+        <div id="app">
+            <div class="container">
+                    <div v-for="currency in bpi" v-bind:key="currency.rate_float">
+                        <div><strong>{{ currency.code }}</strong>: {{ currency.rate_float}}</div>
+                    </div>
+                    <div v-if="chart_data"></div>
+                        <canvas id="Chart" width="400" height="400"></canvas>
+                    </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        new Vue({
+        el: '#app',
+        data () {
+            return {
+            curency_series: {},
+            chart_data: {},
+            data: null,
+            eur: null,
+            usd: null,
+            bpi: [],
+            myLineChart: null,
+            calls: 0
+            }
+        },
+        mounted () {
+            this.get_data()
+            this.render_chart()
+            setInterval(() => this.get_data(), 10000)
+        },
+        methods: {
+            render_stuff: function (response){
+                this.data = response.data
+                this.bpi = this.data.bpi
+                this.update_series()
+                // this.series.push({x:new Date(), y:usd_data.rate_float})
+                this.myLineChart.update()
+            },
+            get_data: function (){
+                this.calls++
+                axios
+                .get('https://api.coindesk.com/v1/bpi/currentprice.json')
+                .then(response => this.render_stuff(response))
+            },
+            update_series: function(){
+                if(this.calls==1){
+                    this.chart_data.datasets = []
+                    for (const key in this.bpi){
+                        let element = this.bpi[key]
+                        console.warn(key)
+                        this.curency_series[element.code] = [{x:new Date(), y:element.rate_float}]
+                    }
+                    for (const key in this.bpi){
+                        let element = this.bpi[key]
+                        this.curency_series[element.code] = [{x:new Date(), y:element.rate_float}]
+                    }
+                    console.warn("series initialized")
+                }else{
+                    for (const key in this.bpi){
+                        let element = this.bpi[key]
+                        this.curency_series[element.code].push({x:new Date(), y:element.rate_float})
+                    }
+                }
+                this.chart_data.datasets = []
+                for(key in this.curency_series){
+                    this.chart_data.datasets.push(
+                        {label:key, data:this.curency_series[key], borderColor: "#" + Math.random().toString(16).slice(2, 8)}
+                    )
+                }
+
+            },
+            render_chart: function(){
+                var ctx = document.getElementById('Chart');
+                this.myLineChart = new Chart(ctx, {
+                                    type: 'line',
+                                    data: this.chart_data,
+                                    options: {
+                                        scales: {
+                                            xAxes: [{
+                                                type: 'time',
+                                                distribution: 'series'
+                                            }]
+                                        }
+                                    }
+                                });
+            }
+        }
+        })
+    </script>

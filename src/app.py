@@ -2,11 +2,13 @@ from flask import Flask, jsonify, request, abort
 from datetime import datetime
 from models import Log, _init__db, db as database
 from flask_basicauth import BasicAuth
+from flask_cors import CORS
 import time
 
 SHOW_LIMIT = 20
 
 app = Flask(__name__)
+CORS(app)
 app.config['BASIC_AUTH_USERNAME'] = 'admin'
 app.config['BASIC_AUTH_PASSWORD'] = 'admin'
 basic_auth = BasicAuth(app)
@@ -32,6 +34,7 @@ class Response(dict):
         self.room_name = self.choices[self.room_number]
         self.created = datetime.now()
         self.message = self.get_message()
+        self.key = self.get_key()
 
     def get_message(self) -> str:
         return f"{self.created}: Movement from room {self.room_number}"
@@ -46,6 +49,13 @@ class Response(dict):
     @classmethod
     def is_valid_number(cls, number):
         return number in cls.choices.keys()
+    @classmethod
+    def get_room_by_number(cls, number):
+        return cls.choices.get(number, '')
+    
+    def get_key(self):
+        import hashlib
+        return hashlib.md5(str(self.created).encode()).hexdigest()
 
 @app.route('/ping/room/<number>', methods=['GET'])
 @basic_auth.required
@@ -60,20 +70,28 @@ def ping_room(number):
 @basic_auth.required
 def show_room(number):
     number = int(request.view_args['number'])
+    room_name = Response.get_room_by_number(number)
     logs = Log.select().where(Log.room_number==number).order_by(Log.created.desc()).limit(SHOW_LIMIT).dicts()
-    return jsonify(results=list(logs)), 200
+    return jsonify(results=list(logs), room_number=number, room_name=room_name), 200
 
 @app.route('/show/rooms', methods=['GET'])
 @basic_auth.required
 def show_rooms():
-    logs = Log.select().order_by(Log.created.desc()).limit(SHOW_LIMIT).dicts()
-    return jsonify(results=list(logs)), 200
+    results = {room_name:list(Log.select().where(Log.room_number==room_number).order_by(Log.created.desc()).limit(SHOW_LIMIT).dicts()) for room_number, room_name in Response.choices.items()}
+
+    return jsonify(results=results), 200
 
 @app.route('/show/last/<limit>', methods=['GET'])
 @basic_auth.required
 def show_last(limit):
     logs = Log.select().order_by(Log.created.desc()).limit(limit).dicts()
     return jsonify(results=list(logs)), 200
+
+@app.route('/show/last', methods=['GET'])
+@basic_auth.required
+def show_last_one():
+    log = Log.select().order_by(Log.created.desc()).dicts().get()
+    return jsonify(result=log), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=9050, debug=True)
