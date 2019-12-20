@@ -2,6 +2,9 @@
     <head>
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js" integrity="sha256-4iQZ6BVL4qNKlQ27TExEhBN1HFPvAvAMbFavKKosSWQ=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.27/moment-timezone-with-data.min.js" integrity="sha256-ltodGpbck6Njvgsa9pG7Xnr0xkVF57ctgfAS+LOeZt4=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/locale/ro.js" integrity="sha256-byt6+Ts3ia6sQPF6Yy/g+D11Lib6k3uXTfufCiFSGrY=" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css" />
     </head>
     <body>
@@ -16,7 +19,8 @@
                                     </div>
                                     <div class="message-body">
                                         <div v-if="last_log">
-                                                <strong>{{ last_log.created }}</strong> {{ last_log.room_name}}
+                                            <div class="title">{{ last_log.room_name}}</div>
+                                            <div class="subtitle">{{ last_log.created }}</strong>
                                         </div>
                                     </div>
                             </article>
@@ -28,7 +32,7 @@
                                         <div class="message-body">
                                             <div v-if="logs.length > 0">
                                                 <div v-for="log in logs" v-bind:key="log.key">
-                                                        <strong>{{ log.created }}</strong>
+                                                        <strong>{{render_date(log.created)}}</strong>
                                                 </div>
                                             </div>
                                             <div v-else>Nu sunt date disponibile</div>
@@ -59,6 +63,9 @@
             setInterval(() => this.get_rooms(), 10000)
         },
         methods: {
+            render_date: function (datestr){
+                return moment(datestr).tz('GMT').format('hh:mm:ss')
+            },
             render_last_log: function (response){
                 this.last_log = response.data.result
 
