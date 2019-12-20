@@ -25,15 +25,13 @@
                                     </div>
                             </article>
 
-                                <article v-for="(logs,room) in rooms" class="message">
+                                <article v-for="(logs,room) in rooms" class="message room">
                                         <div class="message-header">
                                             <p>{{ room }}</p>
                                         </div>
                                         <div class="message-body">
-                                            <div v-if="logs.length > 0">
-                                                <div v-for="log in logs" v-bind:key="log.key">
-                                                        <strong>{{render_date(log.created)}}</strong>
-                                                </div>
+                                            <div v-if="logs.length > 0" v-for="log in logs" v-bind:key="log.key" class="log">
+                                                    <strong>{{render_date(log.created)}}</strong>
                                             </div>
                                             <div v-else>Nu sunt date disponibile</div>
                                         </div>
@@ -87,3 +85,8 @@
         }
         })
     </script>
+    <style>
+        article.room > div.message-body > div.log:not(:first-child){
+            color: gray;
+        }
+    </style>
